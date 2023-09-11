@@ -1,0 +1,83 @@
+/* Ayden Jackson (Coming Soon Page) */
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+*{
+  margin: 0;
+  box-sizing: border-box;
+}
+body{
+  background-color: #000000;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+}
+
+.coming-soon{
+  text-align: center;
+  position: relative;
+  height: 100vh;
+}
+
+.coming-soon .content {
+  padding: 20vh 0 0;
+}
+.coming-soon .content h1{
+  font-size: 40px;
+  text-transform: lowercase;
+}
+
+.coming-soon .content p{
+  font-size: 25px;
+  padding: 0 0 20px;
+}
+
+.coming-soon .content form{
+  border: 1px solid #ffffff;
+  width: 50%;
+  margin: auto;
+  padding: 20px 0 20px;
+}
+
+.coming-soon .content form h3{
+  padding: 0 0 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.coming-soon .content form input{
+  padding: 10px;
+  border: 0px;
+}
+.coming-soon .content form button{
+  cursor: pointer;
+  padding: 10px;
+  border: 0px;
+  background-color: red;
+  color: #ffffff;
+}
+
+.coming-soon ul{
+  list-style: none;
+  padding: 15px 0 15px;
+  margin: 0 auto;
+}
+.coming-soon ul li{
+  display: inline;
+  font-size: 19px;
+  margin: 0 5px;
+}
+.coming-soon ul li a{
+  text-decoration: none;
+  color: #ffffff;
+}
+
+@media screen and (max-width: 1100px){
+  .coming-soon .content form {
+    width: 50%;
+    padding: 0 30px 20px;
+    display: flex;
+    flex-direction: column;
+}
+  .coming-soon .content form button {
+    margin-top: 15px;
+}
+}
