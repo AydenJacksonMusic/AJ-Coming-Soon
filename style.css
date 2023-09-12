@@ -10,6 +10,10 @@ body{
   color: #ffffff;
   font-family: 'Poppins', sans-serif;
 }
+.wrapper{
+  width: 80%;
+  margin: auto;
+}
 
 .coming-soon{
   text-align: center;
