@@ -53,6 +53,9 @@ body{
 .options .box h2,h4{
   padding: 0 0 10px;
 }
+.options .box ol li{
+  line-height: 2.5;
+}
 @media (max-width: 600px){
   .options{
     grid-template-columns: 1fr;
