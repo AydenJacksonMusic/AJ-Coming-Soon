@@ -85,3 +85,8 @@ body{
     margin-top: 15px;
 }
 }
+.pod-link{
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: bold;
+}
