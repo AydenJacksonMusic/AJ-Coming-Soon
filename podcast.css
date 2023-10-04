@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital@0;1&display=swap');
+@font-face {
+  font-family: WesternBangBang;
+  src: url('./WesternBangBang-Regular.woff');
+}
+*{
+  margin: 0;
+  box-sizing: border-box;
+}
+body{
+  background-color: #000000;
+  color: #ffffff;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+.wrapper{
+  width: 80%;
+  margin: auto;
+}
+.logo{
+  width: 9rem;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  font-weight: 400;
+  font-family: WesternBangBang;
+  padding: 0 0 20px;
+}
+.logo .top{
+  text-align: left;
+}
+.logo .middle{
+  text-align: center;
+}
+.logo .bottom{
+  text-align: right;
+}
+.logo .bottom .background {
+  background-color: red;
+  padding: 0 5px 0;
+}
+.options{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
+}
+.options .box{
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  padding: 1rem;
+}
+.options .box h2,h4{
+  padding: 0 0 10px;
+}
+@media (max-width: 600px){
+  .options{
+    grid-template-columns: 1fr;
+  }
+}
+footer{
+  padding: 10px 0 0;
+}
+footer p span{
+  padding: 2px;
+  background-color: yellow;
+  color: #000000;
+}
