@@ -18,6 +18,7 @@ Please note: Duplication of the code contained in this file may result in legal 
 }
 #header {
   position: relative;
+  z-index: 999;
   background-color: black;
   color: #ffffff;
   text-align: center;
