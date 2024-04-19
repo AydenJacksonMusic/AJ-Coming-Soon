@@ -34,6 +34,7 @@ Please note: Duplication of the code contained in this file may result in legal 
 }
 #header #wrapper #logo{
 /*   Future styles here */
+  padding: 0 0 10px;
 }
 #header #wrapper #desk-nav{
 /*   Future styles here */
