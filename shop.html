@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,246 +9,228 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .product-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .product-card { transition: all 0.2s; }
+        .product-card:hover { transform: translateY(-4px); }
     </style>
 </head>
-<body class="bg-zinc-950 text-white">
-    <div id="root"></div>
+<body class="bg-zinc-950 text-white min-h-screen">
+    <div class="max-w-7xl mx-auto px-6">
+        <!-- Header -->
+        <header class="sticky top-0 bg-zinc-900 border-b border-zinc-800 z-50 py-6">
+            <div class="flex justify-between items-center">
+                <h1 class="text-4xl font-bold tracking-tighter">SHOP</h1>
+                <div class="flex items-center gap-6">
+                    <input id="search" 
+                           type="text" 
+                           placeholder="Search products..." 
+                           class="bg-zinc-800 border border-zinc-700 rounded-full px-6 py-3 w-80 focus:outline-none focus:border-emerald-500">
+                    <button id="cart-btn" class="relative flex items-center gap-2 text-2xl hover:text-emerald-400">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-emerald-500 text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
 
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+        <!-- Products -->
+        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 py-12"></div>
+    </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, createContext, useContext } = React;
+    <!-- Cart Drawer -->
+    <div id="cart-drawer" class="fixed inset-0 z-[100] hidden flex">
+        <div class="absolute inset-0 bg-black/70" onclick="closeCart()"></div>
+        <div class="ml-auto w-full max-w-md bg-zinc-900 h-full flex flex-col shadow-2xl">
+            <div class="p-8 border-b border-zinc-800 flex justify-between items-center">
+                <h2 class="text-2xl font-semibold">Your Cart</h2>
+                <button onclick="closeCart()" class="text-3xl text-zinc-400 hover:text-white">×</button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 p-8 overflow-auto space-y-8"></div>
+            
+            <div class="p-8 border-t border-zinc-800">
+                <div class="flex justify-between text-xl mb-8">
+                    <span>Total</span>
+                    <span id="cart-total" class="font-bold">$0</span>
+                </div>
+                <button onclick="checkout()" 
+                        class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold py-5 rounded-3xl text-lg">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
 
+    <script>
         // ================= CONFIG =================
-        const STOREFRONT_TOKEN = "ptkn_1f073ce7-bd7d-4322-82ff-95552325b510"; // ← Replace this!
-        const SHOP_DOMAIN = "ayden-jackson-shop.fourthwall.com";       // ← Your actual shop subdomain
+        const STOREFRONT_TOKEN = "YOUR_STOREFRONT_TOKEN_HERE"; // ← Replace this
+        const SHOP_DOMAIN = "your-shop.fourthwall.com";       // ← Replace this
         const API_BASE = "https://storefront-api.fourthwall.com/v1";
 
-        const CartContext = createContext();
+        let cartId = localStorage.getItem('fourthwall_cartId');
+        let cart = null;
 
-        function CartProvider({ children }) {
-            const [cartId, setCartId] = useState(localStorage.getItem('fourthwall_cartId'));
-            const [cart, setCart] = useState(null);
-            const [isCartOpen, setIsCartOpen] = useState(false);
-            const [error, setError] = useState(null);
+        // Fetch products
+        async function loadProducts() {
+            const container = document.getElementById('products');
+            container.innerHTML = '<div class="col-span-full text-center py-20">Loading products...</div>';
+            
+            try {
+                const res = await fetch(`${API_BASE}/collections/all/products?storefront_token=${STOREFRONT_TOKEN}&size=50`);
+                const data = await res.json();
+                const products = data.results || [];
+                
+                container.innerHTML = '';
+                
+                products.forEach(product => {
+                    const variant = product.variants?.[0];
+                    const price = variant?.unitPrice?.value || product.price || 0;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'product-card bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800';
+                    card.innerHTML = `
+                        <div class="relative aspect-square">
+                            <img src="${product.images?.[0]?.url || 'https://picsum.photos/600'}" 
+                                 class="w-full h-full object-cover" alt="${product.name}">
+                            <div class="absolute top-4 right-4 bg-black/80 px-4 py-1 rounded-full text-sm font-mono">$${price}</div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-semibold text-lg mb-4 line-clamp-2">${product.name}</h3>
+                            <button onclick="addToCart('${variant?.id}')" 
+                                    class="w-full bg-white text-black font-semibold py-4 rounded-2xl hover:bg-emerald-400 transition">
+                                Add to Cart
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                container.innerHTML = `<div class="col-span-full text-center py-20 text-red-400">Error loading products.<br>Check console and token.</div>`;
+                console.error(e);
+            }
+        }
 
-            const ensureCart = async () => {
-                if (cartId) {
-                    const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
-                    if (res.ok) return cartId;
-                }
+        // Cart functions
+        async function ensureCart() {
+            if (cartId) {
+                const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
+                if (res.ok) return cartId;
+            }
+            
+            const res = await fetch(`${API_BASE}/carts?storefront_token=${STOREFRONT_TOKEN}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currency: 'USD' })
+            });
+            
+            const newCart = await res.json();
+            cartId = newCart.id;
+            localStorage.setItem('fourthwall_cartId', cartId);
+            return cartId;
+        }
 
-                const res = await fetch(`${API_BASE}/carts?storefront_token=${STOREFRONT_TOKEN}`, {
+        async function addToCart(variantId) {
+            if (!variantId) return alert("No variant available");
+            
+            try {
+                const id = await ensureCart();
+                await fetch(`${API_BASE}/carts/${id}/add?storefront_token=${STOREFRONT_TOKEN}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ currency: 'USD' })
+                    body: JSON.stringify({ items: [{ variantId, quantity: 1 }] })
                 });
-
-                if (!res.ok) throw new Error('Failed to create cart');
-                const newCart = await res.json();
-                localStorage.setItem('fourthwall_cartId', newCart.id);
-                setCartId(newCart.id);
-                return newCart.id;
-            };
-
-            const refreshCart = async () => {
-                if (!cartId) return;
-                const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setCart(data);
-                }
-            };
-
-            const addToCart = async (variantId, quantity = 1) => {
-                if (!variantId) return alert("No variant available");
-                try {
-                    const id = await ensureCart();
-                    const res = await fetch(`${API_BASE}/carts/${id}/add?storefront_token=${STOREFRONT_TOKEN}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ items: [{ variantId, quantity }] })
-                    });
-
-                    if (!res.ok) throw new Error('Failed to add item');
-                    await refreshCart();
-                    setIsCartOpen(true);
-                } catch (err) {
-                    console.error(err);
-                    alert("Add to cart failed. Check console and token.");
-                }
-            };
-
-            const removeFromCart = async (variantId) => {
-                if (!cartId) return;
-                await fetch(`${API_BASE}/carts/${cartId}/items/${variantId}?storefront_token=${STOREFRONT_TOKEN}`, { method: 'DELETE' });
                 await refreshCart();
-            };
-
-            const checkout = () => {
-                if (!cartId) return;
-                const params = new URLSearchParams({ cartId, cartCurrency: 'USD' });
-                window.location.href = `https://${SHOP_DOMAIN}/checkout/?${params.toString()}`;
-            };
-
-            useEffect(() => { if (cartId) refreshCart(); }, [cartId]);
-
-            return React.createElement(CartContext.Provider, {
-                value: { cart, addToCart, removeFromCart, checkout, isCartOpen, setIsCartOpen }
-            }, children);
+                openCart();
+            } catch (e) {
+                console.error(e);
+                alert("Failed to add to cart. Check console.");
+            }
         }
 
-        function App() {
-            const [products, setProducts] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [searchTerm, setSearchTerm] = useState('');
-            const { cart, addToCart, isCartOpen, setIsCartOpen } = useContext(CartContext);
-
-            useEffect(() => {
-                fetch(`${API_BASE}/collections/all/products?storefront_token=${STOREFRONT_TOKEN}&size=50`)
-                    .then(r => r.json())
-                    .then(data => {
-                        setProducts(data.results || []);
-                        setLoading(false);
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        setLoading(false);
-                    });
-            }, []);
-
-            const filtered = products.filter(p => 
-                p.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            return React.createElement('div', { className: 'min-h-screen bg-zinc-950' },
-                // Header
-                React.createElement('header', { className: 'sticky top-0 bg-zinc-900 border-b border-zinc-800 z-50' },
-                    React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-5 flex justify-between items-center' },
-                        React.createElement('h1', { className: 'text-3xl font-bold' }, 'SHOP'),
-                        React.createElement('div', { className: 'flex items-center gap-6' },
-                            React.createElement('input', {
-                                type: 'text',
-                                placeholder: 'Search...',
-                                value: searchTerm,
-                                onChange: e => setSearchTerm(e.target.value),
-                                className: 'bg-zinc-800 border border-zinc-700 rounded-full px-5 py-3 w-80 focus:outline-none focus:border-emerald-500'
-                            }),
-                            React.createElement('button', {
-                                onClick: () => setIsCartOpen(true),
-                                className: 'relative text-2xl hover:text-emerald-400'
-                            },
-                                React.createElement('i', { className: 'fa-solid fa-cart-shopping' }),
-                                cart && cart.items && cart.items.length > 0 && 
-                                React.createElement('span', { 
-                                    className: 'absolute -top-1 -right-1 bg-emerald-500 text-xs font-mono w-5 h-5 rounded-full flex items-center justify-center'
-                                }, cart.items.length)
-                            )
-                        )
-                    )
-                ),
-
-                // Hero
-                React.createElement('div', { className: 'bg-gradient-to-br from-zinc-900 to-black py-16 text-center' },
-                    React.createElement('h2', { className: 'text-5xl font-bold tracking-tighter' }, 'Official Merch')
-                ),
-
-                // Products
-                React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-12' },
-                    loading ? 
-                    React.createElement('div', { className: 'text-center py-20 text-xl' }, 'Loading products...') :
-                    React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8' },
-                        filtered.map(product => 
-                            React.createElement(ProductCard, { key: product.id, product, addToCart })
-                        )
-                    )
-                ),
-
-                React.createElement(CartDrawer, { isOpen: isCartOpen, setIsOpen: setIsCartOpen })
-            );
+        async function refreshCart() {
+            if (!cartId) return;
+            const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
+            if (res.ok) {
+                cart = await res.json();
+                updateCartUI();
+            }
         }
 
-        function ProductCard({ product, addToCart }) {
-            const variant = product.variants?.[0];
-            const price = variant ? variant.unitPrice?.value || product.price : product.price;
-
-            return React.createElement('div', { className: 'product-card bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800' },
-                React.createElement('div', { className: 'relative aspect-square' },
-                    React.createElement('img', {
-                        src: product.images?.[0]?.url || 'https://picsum.photos/600/600',
-                        alt: product.name,
-                        className: 'w-full h-full object-cover'
-                    }),
-                    React.createElement('div', { className: 'absolute top-4 right-4 bg-black/80 px-3 py-1 rounded-full text-sm font-mono' }, `$${price}`)
-                ),
-                React.createElement('div', { className: 'p-6' },
-                    React.createElement('h3', { className: 'font-semibold text-lg mb-2 line-clamp-2' }, product.name),
-                    React.createElement('button', {
-                        onClick: () => addToCart(variant?.id),
-                        className: 'mt-4 w-full bg-white text-black font-semibold py-4 rounded-2xl hover:bg-emerald-400 transition-colors'
-                    }, 'Add to Cart')
-                )
-            );
+        function updateCartUI() {
+            const countEl = document.getElementById('cart-count');
+            const itemsContainer = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            
+            const count = cart?.items?.length || 0;
+            countEl.textContent = count;
+            countEl.classList.toggle('hidden', count === 0);
+            
+            let html = '';
+            let total = 0;
+            
+            if (!cart?.items?.length) {
+                html = `<div class="text-center py-20 text-zinc-500">Your cart is empty</div>`;
+            } else {
+                cart.items.forEach(item => {
+                    const price = item.variant?.unitPrice?.value || 0;
+                    total += price * item.quantity;
+                    html += `
+                        <div class="flex gap-4">
+                            <img src="${item.variant?.images?.[0]?.url || ''}" class="w-20 h-20 object-cover rounded-2xl" alt="">
+                            <div class="flex-1">
+                                <div class="font-medium">${item.variant?.product?.name}</div>
+                                <div class="text-emerald-400">$${price} × ${item.quantity}</div>
+                                <button onclick="removeFromCart('${item.variant?.id}')" class="text-red-400 text-sm mt-2">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            itemsContainer.innerHTML = html;
+            totalEl.textContent = `$${total}`;
         }
 
-        function CartDrawer({ isOpen, setIsOpen }) {
-            const { cart, removeFromCart, checkout } = useContext(CartContext);
-            if (!isOpen) return null;
-
-            const total = cart?.totals?.total?.value || 0;
-
-            return React.createElement('div', { className: 'fixed inset-0 z-[100] flex' },
-                React.createElement('div', { className: 'absolute inset-0 bg-black/70', onClick: () => setIsOpen(false) }),
-                React.createElement('div', { className: 'ml-auto w-full max-w-md bg-zinc-900 h-full flex flex-col' },
-                    React.createElement('div', { className: 'p-8 border-b border-zinc-800 flex justify-between' },
-                        React.createElement('h2', { className: 'text-2xl font-semibold' }, 'Your Cart'),
-                        React.createElement('button', { onClick: () => setIsOpen(false), className: 'text-3xl' }, '×')
-                    ),
-                    React.createElement('div', { className: 'flex-1 p-8 overflow-auto space-y-8' },
-                        !cart || !cart.items || cart.items.length === 0 ?
-                        React.createElement('div', { className: 'text-center py-20 text-zinc-500' }, 'Cart is empty') :
-                        cart.items.map(item => 
-                            React.createElement('div', { key: item.id, className: 'flex gap-4' },
-                                React.createElement('img', {
-                                    src: item.variant?.images?.[0]?.url || '',
-                                    className: 'w-20 h-20 object-cover rounded-xl'
-                                }),
-                                React.createElement('div', { className: 'flex-1' },
-                                    React.createElement('div', null, item.variant?.product?.name),
-                                    React.createElement('div', { className: 'text-emerald-400' }, `$${item.variant?.unitPrice?.value} × ${item.quantity}`),
-                                    React.createElement('button', {
-                                        onClick: () => removeFromCart(item.variant.id),
-                                        className: 'text-red-400 text-sm mt-2'
-                                    }, 'Remove')
-                                )
-                            )
-                        )
-                    ),
-                    React.createElement('div', { className: 'p-8 border-t border-zinc-800' },
-                        React.createElement('div', { className: 'flex justify-between text-xl mb-6' },
-                            React.createElement('span', null, 'Total'),
-                            React.createElement('span', { className: 'font-bold' }, `$${total}`)
-                        ),
-                        React.createElement('button', {
-                            onClick: checkout,
-                            className: 'w-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold py-5 rounded-3xl text-lg'
-                        }, 'Checkout')
-                    )
-                )
-            );
+        async function removeFromCart(variantId) {
+            if (!cartId) return;
+            await fetch(`${API_BASE}/carts/${cartId}/items/${variantId}?storefront_token=${STOREFRONT_TOKEN}`, { method: 'DELETE' });
+            await refreshCart();
         }
 
-        // Render
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(
-            React.createElement(CartProvider, null,
-                React.createElement(App)
-            )
-        );
+        function openCart() {
+            document.getElementById('cart-drawer').classList.remove('hidden');
+            refreshCart();
+        }
+
+        function closeCart() {
+            document.getElementById('cart-drawer').classList.add('hidden');
+        }
+
+        function checkout() {
+            if (!cartId) return alert("Cart is empty");
+            const params = new URLSearchParams({ cartId, cartCurrency: 'USD' });
+            window.location.href = `https://${SHOP_DOMAIN}/checkout/?${params.toString()}`;
+        }
+
+        // Search
+        document.getElementById('search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('#products > div');
+            cards.forEach(card => {
+                const name = card.textContent.toLowerCase();
+                card.style.display = name.includes(term) ? '' : 'none';
+            });
+        });
+
+        // Init
+        loadProducts();
+        if (cartId) refreshCart();
+        
+        // Make functions global for onclick
+        window.addToCart = addToCart;
+        window.removeFromCart = removeFromCart;
+        window.openCart = openCart;
+        window.closeCart = closeCart;
+        window.checkout = checkout;
     </script>
 </body>
 </html>
