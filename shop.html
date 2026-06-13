@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .product-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .product-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
     </style>
 </head>
@@ -24,8 +25,8 @@
         const { useState, useEffect, createContext, useContext } = React;
 
         // ================= CONFIG =================
-        const STOREFRONT_TOKEN = "ptkn_1f073ce7-bd7d-4322-82ff-95552325b510"; // ← MUST replace
-        const SHOP_DOMAIN = "ayden-jackson-shop.fourthwall.com";       // ← Your actual shop domain
+        const STOREFRONT_TOKEN = "ptkn_1f073ce7-bd7d-4322-82ff-95552325b510"; // ← Replace this!
+        const SHOP_DOMAIN = "ayden-jackson-shop.fourthwall.com";       // ← Your actual shop subdomain
         const API_BASE = "https://storefront-api.fourthwall.com/v1";
 
         const CartContext = createContext();
@@ -36,14 +37,10 @@
             const [isCartOpen, setIsCartOpen] = useState(false);
             const [error, setError] = useState(null);
 
-            const log = (msg, data) => console.log(`[Cart] ${msg}`, data);
-
             const ensureCart = async () => {
                 if (cartId) {
-                    try {
-                        const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
-                        if (res.ok) return cartId;
-                    } catch (e) { log("Cart check failed", e); }
+                    const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
+                    if (res.ok) return cartId;
                 }
 
                 const res = await fetch(`${API_BASE}/carts?storefront_token=${STOREFRONT_TOKEN}`, {
@@ -52,7 +49,7 @@
                     body: JSON.stringify({ currency: 'USD' })
                 });
 
-                if (!res.ok) throw new Error(`Create cart failed: ${res.status}`);
+                if (!res.ok) throw new Error('Failed to create cart');
                 const newCart = await res.json();
                 localStorage.setItem('fourthwall_cartId', newCart.id);
                 setCartId(newCart.id);
@@ -61,90 +58,56 @@
 
             const refreshCart = async () => {
                 if (!cartId) return;
-                try {
-                    const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setCart(data);
-                        setError(null);
-                    }
-                } catch (e) {
-                    console.error(e);
+                const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setCart(data);
                 }
             };
 
             const addToCart = async (variantId, quantity = 1) => {
-                if (!variantId) {
-                    alert("No variant ID found for this product");
-                    return;
-                }
+                if (!variantId) return alert("No variant available");
                 try {
-                    setError(null);
                     const id = await ensureCart();
-
-                    // Try both known endpoints
-                    let res = await fetch(`${API_BASE}/carts/${id}/items?storefront_token=${STOREFRONT_TOKEN}`, {
+                    const res = await fetch(`${API_BASE}/carts/${id}/add?storefront_token=${STOREFRONT_TOKEN}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ variantId, quantity })
+                        body: JSON.stringify({ items: [{ variantId, quantity }] })
                     });
 
-                    if (!res.ok) {
-                        // Fallback to /add endpoint
-                        res = await fetch(`${API_BASE}/carts/${id}/add?storefront_token=${STOREFRONT_TOKEN}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ items: [{ variantId, quantity }] })
-                        });
-                    }
-
-                    if (!res.ok) {
-                        const text = await res.text();
-                        throw new Error(`Add failed (${res.status}): ${text}`);
-                    }
-
+                    if (!res.ok) throw new Error('Failed to add item');
                     await refreshCart();
                     setIsCartOpen(true);
-                    log("Added to cart", { variantId });
                 } catch (err) {
                     console.error(err);
-                    setError(err.message);
-                    alert("Failed to add to cart: " + err.message);
+                    alert("Add to cart failed. Check console and token.");
                 }
             };
 
             const removeFromCart = async (variantId) => {
                 if (!cartId) return;
-                try {
-                    await fetch(`${API_BASE}/carts/${cartId}/items/${variantId}?storefront_token=${STOREFRONT_TOKEN}`, {
-                        method: 'DELETE'
-                    });
-                    await refreshCart();
-                } catch (e) { console.error(e); }
+                await fetch(`${API_BASE}/carts/${cartId}/items/${variantId}?storefront_token=${STOREFRONT_TOKEN}`, { method: 'DELETE' });
+                await refreshCart();
             };
 
             const checkout = () => {
-                if (!cartId) return alert("Cart is empty");
-                const params = new URLSearchParams({ cartCurrency: 'USD', cartId });
+                if (!cartId) return;
+                const params = new URLSearchParams({ cartId, cartCurrency: 'USD' });
                 window.location.href = `https://${SHOP_DOMAIN}/checkout/?${params.toString()}`;
             };
 
-            useEffect(() => {
-                if (cartId) refreshCart();
-            }, [cartId]);
+            useEffect(() => { if (cartId) refreshCart(); }, [cartId]);
 
             return React.createElement(CartContext.Provider, {
-                value: { cart, addToCart, removeFromCart, checkout, isCartOpen, setIsCartOpen, error }
+                value: { cart, addToCart, removeFromCart, checkout, isCartOpen, setIsCartOpen }
             }, children);
         }
-
-        // ... (App, ProductCard, CartDrawer components remain mostly the same)
 
         function App() {
             const [products, setProducts] = useState([]);
             const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
-            const { cart, addToCart, isCartOpen, setIsCartOpen, error } = useContext(CartContext);
+            const { cart, addToCart, isCartOpen, setIsCartOpen } = useContext(CartContext);
 
             useEffect(() => {
                 fetch(`${API_BASE}/collections/all/products?storefront_token=${STOREFRONT_TOKEN}&size=50`)
@@ -159,40 +122,50 @@
                     });
             }, []);
 
-            const filteredProducts = products.filter(p =>
+            const filtered = products.filter(p => 
                 p.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
 
             return React.createElement('div', { className: 'min-h-screen bg-zinc-950' },
-                // Header (same as before)
+                // Header
                 React.createElement('header', { className: 'sticky top-0 bg-zinc-900 border-b border-zinc-800 z-50' },
-                    React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-5 flex items-center justify-between' },
-                        React.createElement('div', { className: 'flex items-center gap-3' },
-                            React.createElement('h1', { className: 'text-3xl font-bold tracking-tighter' }, 'SHOP')
-                        ),
-                        React.createElement('div', { className: 'flex items-center gap-8' },
+                    React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-5 flex justify-between items-center' },
+                        React.createElement('h1', { className: 'text-3xl font-bold' }, 'SHOP'),
+                        React.createElement('div', { className: 'flex items-center gap-6' },
                             React.createElement('input', {
-                                type: 'text', placeholder: 'Search...', value: searchTerm,
+                                type: 'text',
+                                placeholder: 'Search...',
+                                value: searchTerm,
                                 onChange: e => setSearchTerm(e.target.value),
-                                className: 'bg-zinc-800 border border-zinc-700 rounded-full px-5 py-2.5 w-80 focus:outline-none focus:border-emerald-500'
+                                className: 'bg-zinc-800 border border-zinc-700 rounded-full px-5 py-3 w-80 focus:outline-none focus:border-emerald-500'
                             }),
                             React.createElement('button', {
                                 onClick: () => setIsCartOpen(true),
-                                className: 'relative flex items-center gap-2 text-xl'
-                            }, React.createElement('i', { className: 'fa-solid fa-cart-shopping' }),
-                                cart?.items?.length > 0 && React.createElement('span', {
-                                    className: 'absolute -top-1 -right-1 bg-emerald-500 text-xs w-5 h-5 flex items-center justify-center rounded-full'
+                                className: 'relative text-2xl hover:text-emerald-400'
+                            },
+                                React.createElement('i', { className: 'fa-solid fa-cart-shopping' }),
+                                cart && cart.items && cart.items.length > 0 && 
+                                React.createElement('span', { 
+                                    className: 'absolute -top-1 -right-1 bg-emerald-500 text-xs font-mono w-5 h-5 rounded-full flex items-center justify-center'
                                 }, cart.items.length)
                             )
                         )
                     )
                 ),
 
-                // Products Grid
+                // Hero
+                React.createElement('div', { className: 'bg-gradient-to-br from-zinc-900 to-black py-16 text-center' },
+                    React.createElement('h2', { className: 'text-5xl font-bold tracking-tighter' }, 'Official Merch')
+                ),
+
+                // Products
                 React.createElement('div', { className: 'max-w-7xl mx-auto px-6 py-12' },
-                    loading ? React.createElement('div', { className: 'text-center py-20' }, 'Loading products...') :
+                    loading ? 
+                    React.createElement('div', { className: 'text-center py-20 text-xl' }, 'Loading products...') :
                     React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8' },
-                        filteredProducts.map(p => React.createElement(ProductCard, { key: p.id, product: p, addToCart }))
+                        filtered.map(product => 
+                            React.createElement(ProductCard, { key: product.id, product, addToCart })
+                        )
                     )
                 ),
 
@@ -202,18 +175,22 @@
 
         function ProductCard({ product, addToCart }) {
             const variant = product.variants?.[0];
+            const price = variant ? variant.unitPrice?.value || product.price : product.price;
+
             return React.createElement('div', { className: 'product-card bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800' },
                 React.createElement('div', { className: 'relative aspect-square' },
                     React.createElement('img', {
-                        src: product.images?.[0]?.url || 'https://picsum.photos/600',
+                        src: product.images?.[0]?.url || 'https://picsum.photos/600/600',
+                        alt: product.name,
                         className: 'w-full h-full object-cover'
-                    })
+                    }),
+                    React.createElement('div', { className: 'absolute top-4 right-4 bg-black/80 px-3 py-1 rounded-full text-sm font-mono' }, `$${price}`)
                 ),
                 React.createElement('div', { className: 'p-6' },
-                    React.createElement('h4', { className: 'font-semibold mb-2' }, product.name),
+                    React.createElement('h3', { className: 'font-semibold text-lg mb-2 line-clamp-2' }, product.name),
                     React.createElement('button', {
                         onClick: () => addToCart(variant?.id),
-                        className: 'w-full bg-white text-black font-semibold py-4 rounded-2xl hover:bg-emerald-400'
+                        className: 'mt-4 w-full bg-white text-black font-semibold py-4 rounded-2xl hover:bg-emerald-400 transition-colors'
                     }, 'Add to Cart')
                 )
             );
@@ -223,12 +200,50 @@
             const { cart, removeFromCart, checkout } = useContext(CartContext);
             if (!isOpen) return null;
 
-            return React.createElement('div', { className: 'fixed inset-0 z-50 flex' },
-                // backdrop + drawer (same as previous version)
-                // ... (omitted for brevity – same as before)
+            const total = cart?.totals?.total?.value || 0;
+
+            return React.createElement('div', { className: 'fixed inset-0 z-[100] flex' },
+                React.createElement('div', { className: 'absolute inset-0 bg-black/70', onClick: () => setIsOpen(false) }),
+                React.createElement('div', { className: 'ml-auto w-full max-w-md bg-zinc-900 h-full flex flex-col' },
+                    React.createElement('div', { className: 'p-8 border-b border-zinc-800 flex justify-between' },
+                        React.createElement('h2', { className: 'text-2xl font-semibold' }, 'Your Cart'),
+                        React.createElement('button', { onClick: () => setIsOpen(false), className: 'text-3xl' }, '×')
+                    ),
+                    React.createElement('div', { className: 'flex-1 p-8 overflow-auto space-y-8' },
+                        !cart || !cart.items || cart.items.length === 0 ?
+                        React.createElement('div', { className: 'text-center py-20 text-zinc-500' }, 'Cart is empty') :
+                        cart.items.map(item => 
+                            React.createElement('div', { key: item.id, className: 'flex gap-4' },
+                                React.createElement('img', {
+                                    src: item.variant?.images?.[0]?.url || '',
+                                    className: 'w-20 h-20 object-cover rounded-xl'
+                                }),
+                                React.createElement('div', { className: 'flex-1' },
+                                    React.createElement('div', null, item.variant?.product?.name),
+                                    React.createElement('div', { className: 'text-emerald-400' }, `$${item.variant?.unitPrice?.value} × ${item.quantity}`),
+                                    React.createElement('button', {
+                                        onClick: () => removeFromCart(item.variant.id),
+                                        className: 'text-red-400 text-sm mt-2'
+                                    }, 'Remove')
+                                )
+                            )
+                        )
+                    ),
+                    React.createElement('div', { className: 'p-8 border-t border-zinc-800' },
+                        React.createElement('div', { className: 'flex justify-between text-xl mb-6' },
+                            React.createElement('span', null, 'Total'),
+                            React.createElement('span', { className: 'font-bold' }, `$${total}`)
+                        ),
+                        React.createElement('button', {
+                            onClick: checkout,
+                            className: 'w-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold py-5 rounded-3xl text-lg'
+                        }, 'Checkout')
+                    )
+                )
             );
         }
 
+        // Render
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(
             React.createElement(CartProvider, null,
