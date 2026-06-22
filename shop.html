@@ -3,234 +3,481 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fourthwall Shop</title>
+    <title>Fourthwall Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
         body { font-family: 'Inter', system-ui, sans-serif; }
-        .product-card { transition: all 0.2s; }
-        .product-card:hover { transform: translateY(-4px); }
+        .title-font { font-family: 'Space Grotesk', sans-serif; }
+        
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        
+        .cart-drawer {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .cart-drawer.open {
+            transform: translateX(0);
+        }
+        
+        .toast {
+            animation: toastIn 0.3s ease forwards;
+        }
+        @keyframes toastIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
-<body class="bg-zinc-950 text-white min-h-screen">
-    <div class="max-w-7xl mx-auto px-6">
-        <!-- Header -->
-        <header class="sticky top-0 bg-zinc-900 border-b border-zinc-800 z-50 py-6">
-            <div class="flex justify-between items-center">
-                <h1 class="text-4xl font-bold tracking-tighter">SHOP</h1>
-                <div class="flex items-center gap-6">
-                    <input id="search" 
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+    <nav class="bg-black border-b border-zinc-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <h1 id="shop-name" class="title-font text-3xl font-semibold tracking-tight">Store</h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <input id="search-input" 
                            type="text" 
                            placeholder="Search products..." 
-                           class="bg-zinc-800 border border-zinc-700 rounded-full px-6 py-3 w-80 focus:outline-none focus:border-emerald-500">
-                    <button id="cart-btn" class="relative flex items-center gap-2 text-2xl hover:text-emerald-400">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        <span id="cart-count" class="absolute -top-1 -right-1 bg-emerald-500 text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
-                    </button>
+                           class="bg-zinc-900 border border-zinc-700 rounded-full pl-10 py-2.5 w-80 focus:outline-none focus:border-zinc-500 text-sm">
+                    <i class="fas fa-search absolute left-4 top-3 text-zinc-500"></i>
                 </div>
+                <button onclick="toggleCart()" 
+                        class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 px-5 py-2.5 rounded-2xl border border-zinc-700 transition-colors relative">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Cart</span>
+                    <span id="cart-count" 
+                          class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-mono w-5 h-5 flex items-center justify-center rounded-full">0</span>
+                </button>
+                <button onclick="showSettings()" 
+                        class="p-3 hover:bg-zinc-900 rounded-2xl transition-colors">
+                    <i class="fas fa-cog"></i>
+                </button>
             </div>
-        </header>
+        </div>
+    </nav>
 
-        <!-- Products -->
-        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 py-12"></div>
-    </div>
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <!-- Hero -->
+        <div class="mb-16 text-center">
+            <h2 id="hero-title" class="title-font text-6xl font-semibold tracking-tighter mb-4">Our Collection</h2>
+            <p id="hero-subtitle" class="text-zinc-400 max-w-md mx-auto">High-quality merch powered by Fourthwall</p>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- Populated by JS -->
+        </div>
+    </main>
 
     <!-- Cart Drawer -->
-    <div id="cart-drawer" class="fixed inset-0 z-[100] hidden flex">
-        <div class="absolute inset-0 bg-black/70" onclick="closeCart()"></div>
-        <div class="ml-auto w-full max-w-md bg-zinc-900 h-full flex flex-col shadow-2xl">
-            <div class="p-8 border-b border-zinc-800 flex justify-between items-center">
-                <h2 class="text-2xl font-semibold">Your Cart</h2>
-                <button onclick="closeCart()" class="text-3xl text-zinc-400 hover:text-white">×</button>
+    <div id="cart-drawer" class="cart-drawer fixed top-0 bottom-0 right-0 w-full max-w-md bg-zinc-900 border-l border-zinc-700 shadow-2xl z-[100] overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-zinc-700 flex items-center justify-between">
+            <h2 class="text-2xl font-semibold">Your Cart</h2>
+            <button onclick="toggleCart()" class="text-2xl text-zinc-400 hover:text-white">✕</button>
+        </div>
+        
+        <div id="cart-items" class="flex-1 overflow-auto p-6 space-y-6">
+            <!-- Populated by JS -->
+        </div>
+        
+        <div class="p-6 border-t border-zinc-700">
+            <div class="flex justify-between text-lg mb-6">
+                <span class="font-medium">Total</span>
+                <span id="cart-total" class="font-semibold">$0.00</span>
+            </div>
+            <button onclick="checkout()" 
+                    class="w-full bg-white text-black py-4 rounded-2xl font-semibold hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
+                <i class="fas fa-lock"></i>
+                CHECKOUT WITH FOURTHWALL
+            </button>
+            <p class="text-center text-xs text-zinc-500 mt-4">Shipping &amp; taxes calculated at checkout</p>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[200]">
+        <div class="bg-zinc-900 rounded-3xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-semibold mb-6">Store Settings</h3>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Storefront Token (ptkn_...)</label>
+                    <input id="token-input" type="password" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 focus:outline-none focus:border-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-zinc-400 mb-2">Checkout Domain (e.g. yourshop.fourthwall.com)</label>
+                    <input id="domain-input" type="text" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 focus:outline-none focus:border-white">
+                </div>
             </div>
             
-            <div id="cart-items" class="flex-1 p-8 overflow-auto space-y-8"></div>
-            
-            <div class="p-8 border-t border-zinc-800">
-                <div class="flex justify-between text-xl mb-8">
-                    <span>Total</span>
-                    <span id="cart-total" class="font-bold">$0</span>
-                </div>
-                <button onclick="checkout()" 
-                        class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold py-5 rounded-3xl text-lg">
-                    Proceed to Checkout
-                </button>
+            <div class="flex gap-4 mt-8">
+                <button onclick="saveSettings()" 
+                        class="flex-1 bg-white text-black py-4 rounded-2xl font-semibold">Save &amp; Reload</button>
+                <button onclick="hideSettings()" 
+                        class="flex-1 border border-zinc-700 py-4 rounded-2xl">Cancel</button>
             </div>
         </div>
     </div>
 
+    <!-- Toast -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[300] space-y-3"></div>
+
     <script>
-        // ================= CONFIG =================
-        const STOREFRONT_TOKEN = "ptkn_1f073ce7-bd7d-4322-82ff-95552325b510"; // ← Replace this
-        const SHOP_DOMAIN = "ayden-jackson-shop.fourthwall.com";       // ← Replace this
-        const API_BASE = "https://storefront-api.fourthwall.com/v1";
+        // ==================== CONFIG ====================
+        let STOREFRONT_TOKEN = localStorage.getItem('fw_token') || '';
+        let CHECKOUT_DOMAIN = localStorage.getItem('fw_checkout_domain') || '';
+        const API_BASE = 'https://storefront-api.fourthwall.com/v1';
+        
+        let currentCartId = localStorage.getItem('fw_cart_id') || null;
+        let products = [];
+        let shopInfo = null;
 
-        let cartId = localStorage.getItem('fourthwall_cartId');
-        let cart = null;
+        // ==================== UTILITIES ====================
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
+        }
 
-        // Fetch products
-        async function loadProducts() {
-            const container = document.getElementById('products');
-            container.innerHTML = '<div class="col-span-full text-center py-20">Loading products...</div>';
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl text-sm ${type === 'error' ? 'bg-red-900 text-red-100' : 'bg-zinc-800 text-white'}`;
+            toast.innerHTML = `
+                ${type === 'success' ? '<i class="fas fa-check-circle text-green-400"></i>' : '<i class="fas fa-exclamation-triangle text-red-400"></i>'}
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'all 0.3s';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const url = new URL(`${API_BASE}${endpoint}`);
+            if (STOREFRONT_TOKEN) url.searchParams.append('storefront_token', STOREFRONT_TOKEN);
             
             try {
-                const res = await fetch(`${API_BASE}/collections/all/products?storefront_token=${STOREFRONT_TOKEN}&size=50`);
-                const data = await res.json();
-                const products = data.results || [];
-                
-                container.innerHTML = '';
-                
-                products.forEach(product => {
-                    const variant = product.variants?.[0];
-                    const price = variant?.unitPrice?.value || product.price || 0;
-                    
-                    const card = document.createElement('div');
-                    card.className = 'product-card bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800';
-                    card.innerHTML = `
-                        <div class="relative aspect-square">
-                            <img src="${product.images?.[0]?.url || 'https://picsum.photos/600'}" 
-                                 class="w-full h-full object-cover" alt="${product.name}">
-                            <div class="absolute top-4 right-4 bg-black/80 px-4 py-1 rounded-full text-sm font-mono">$${price}</div>
-                        </div>
-                        <div class="p-6">
-                            <h3 class="font-semibold text-lg mb-4 line-clamp-2">${product.name}</h3>
-                            <button onclick="addToCart('${variant?.id}')" 
-                                    class="w-full bg-white text-black font-semibold py-4 rounded-2xl hover:bg-emerald-400 transition">
-                                Add to Cart
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(card);
+                const res = await fetch(url, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
                 });
-            } catch (e) {
-                container.innerHTML = `<div class="col-span-full text-center py-20 text-red-400">Error loading products.<br>Check console and token.</div>`;
-                console.error(e);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+                }
+                
+                return await res.json();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, 'error');
+                throw err;
             }
         }
 
-        // Cart functions
+        // ==================== CART ====================
         async function ensureCart() {
-            if (cartId) {
-                const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
-                if (res.ok) return cartId;
+            if (currentCartId) {
+                try {
+                    const cart = await apiCall(`/carts/${currentCartId}`);
+                    return currentCartId;
+                } catch (e) {
+                    console.warn("Existing cart invalid");
+                    currentCartId = null;
+                    localStorage.removeItem('fw_cart_id');
+                }
             }
-            
-            const res = await fetch(`${API_BASE}/carts?storefront_token=${STOREFRONT_TOKEN}`, {
+
+            const newCart = await apiCall('/carts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ currency: 'USD' })
             });
             
-            const newCart = await res.json();
-            cartId = newCart.id;
-            localStorage.setItem('fourthwall_cartId', cartId);
-            return cartId;
+            currentCartId = newCart.id;
+            localStorage.setItem('fw_cart_id', currentCartId);
+            return currentCartId;
         }
 
-        async function addToCart(variantId) {
-            if (!variantId) return alert("No variant available");
+        async function addToCart(variantId, quantity = 1) {
+            if (!variantId) return showToast('Select a variant first', 'error');
             
             try {
-                const id = await ensureCart();
-                await fetch(`${API_BASE}/carts/${id}/add?storefront_token=${STOREFRONT_TOKEN}`, {
+                const cartId = await ensureCart();
+                
+                const updated = await apiCall(`/carts/${cartId}/items`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items: [{ variantId, quantity: 1 }] })
+                    body: JSON.stringify({ variantId, quantity })
                 });
-                await refreshCart();
-                openCart();
+                
+                showToast('Added to cart!');
+                renderCart(updated);
             } catch (e) {
                 console.error(e);
-                alert("Failed to add to cart. Check console.");
             }
         }
 
-        async function refreshCart() {
-            if (!cartId) return;
-            const res = await fetch(`${API_BASE}/carts/${cartId}?storefront_token=${STOREFRONT_TOKEN}`);
-            if (res.ok) {
-                cart = await res.json();
-                updateCartUI();
-            }
+        async function removeFromCart(itemIndex) {
+            if (!currentCartId) return;
+            try {
+                const updated = await apiCall(`/carts/${currentCartId}/items/${itemIndex}`, { method: 'DELETE' });
+                renderCart(updated);
+            } catch (e) {}
         }
 
-        function updateCartUI() {
-            const countEl = document.getElementById('cart-count');
-            const itemsContainer = document.getElementById('cart-items');
-            const totalEl = document.getElementById('cart-total');
-            
-            const count = cart?.items?.length || 0;
-            countEl.textContent = count;
-            countEl.classList.toggle('hidden', count === 0);
-            
-            let html = '';
-            let total = 0;
-            
-            if (!cart?.items?.length) {
-                html = `<div class="text-center py-20 text-zinc-500">Your cart is empty</div>`;
-            } else {
-                cart.items.forEach(item => {
-                    const price = item.variant?.unitPrice?.value || 0;
-                    total += price * item.quantity;
-                    html += `
-                        <div class="flex gap-4">
-                            <img src="${item.variant?.images?.[0]?.url || ''}" class="w-20 h-20 object-cover rounded-2xl" alt="">
-                            <div class="flex-1">
-                                <div class="font-medium">${item.variant?.product?.name}</div>
-                                <div class="text-emerald-400">$${price} × ${item.quantity}</div>
-                                <button onclick="removeFromCart('${item.variant?.id}')" class="text-red-400 text-sm mt-2">Remove</button>
-                            </div>
-                        </div>
-                    `;
+        async function updateQuantity(itemIndex, newQty) {
+            if (!currentCartId || newQty < 1) return;
+            try {
+                const updated = await apiCall(`/carts/${currentCartId}/items/${itemIndex}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ quantity: newQty })
                 });
+                renderCart(updated);
+            } catch (e) {}
+        }
+
+        function renderCart(cart) {
+            if (!cart) return;
+            
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            
+            if (!cart.items || cart.items.length === 0) {
+                container.innerHTML = `<p class="text-center text-zinc-400 py-12">Your cart is empty</p>`;
+                document.getElementById('cart-total').textContent = '$0.00';
+                return;
             }
             
-            itemsContainer.innerHTML = html;
-            totalEl.textContent = `$${total}`;
-        }
-
-        async function removeFromCart(variantId) {
-            if (!cartId) return;
-            await fetch(`${API_BASE}/carts/${cartId}/items/${variantId}?storefront_token=${STOREFRONT_TOKEN}`, { method: 'DELETE' });
-            await refreshCart();
-        }
-
-        function openCart() {
-            document.getElementById('cart-drawer').classList.remove('hidden');
-            refreshCart();
-        }
-
-        function closeCart() {
-            document.getElementById('cart-drawer').classList.add('hidden');
-        }
-
-        function checkout() {
-            if (!cartId) return alert("Cart is empty");
-            const params = new URLSearchParams({ cartId, cartCurrency: 'USD' });
-            window.location.href = `https://${SHOP_DOMAIN}/checkout/?${params.toString()}`;
-        }
-
-        // Search
-        document.getElementById('search').addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('#products > div');
-            cards.forEach(card => {
-                const name = card.textContent.toLowerCase();
-                card.style.display = name.includes(term) ? '' : 'none';
+            cart.items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "flex gap-4";
+                div.innerHTML = `
+                    <img src="${item.variant?.images?.[0]?.url || 'https://placehold.co/80'}" 
+                         class="w-20 h-20 object-cover rounded-xl">
+                    <div class="flex-1">
+                        <div class="font-medium">${item.variant?.product?.name || 'Product'}</div>
+                        <div class="text-sm text-zinc-400">${item.variant?.attributes?.description || ''}</div>
+                        <div class="flex items-center justify-between mt-3">
+                            <div class="flex items-center border border-zinc-700 rounded-full">
+                                <button onclick="updateQuantity(${index}, ${item.quantity - 1})" class="px-3 py-1">-</button>
+                                <span class="px-3">${item.quantity}</span>
+                                <button onclick="updateQuantity(${index}, ${item.quantity + 1})" class="px-3 py-1">+</button>
+                            </div>
+                            <div class="font-semibold">${formatPrice(item.variant?.unitPrice?.value * item.quantity)}</div>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${index})" class="text-red-400 hover:text-red-500 self-start">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(div);
             });
-        });
+            
+            const total = cart.totals?.total?.value || 0;
+            document.getElementById('cart-total').textContent = formatPrice(total);
+        }
 
-        // Init
-        loadProducts();
-        if (cartId) refreshCart();
+        async function getCart() {
+            if (!currentCartId) return null;
+            try {
+                return await apiCall(`/carts/${currentCartId}`);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function toggleCart() {
+            const drawer = document.getElementById('cart-drawer');
+            drawer.classList.toggle('open');
+            if (drawer.classList.contains('open')) {
+                getCart().then(cart => renderCart(cart));
+            }
+        }
+
+        // ==================== CHECKOUT ====================
+        function checkout() {
+            if (!currentCartId) {
+                showToast('Cart is empty', 'error');
+                return;
+            }
+            if (!CHECKOUT_DOMAIN) {
+                showToast('Please set your checkout domain in settings', 'error');
+                showSettings();
+                return;
+            }
+            
+            const url = `https://${CHECKOUT_DOMAIN}/checkout/?cartId=${currentCartId}&cartCurrency=USD`;
+            window.location.href = url;
+        }
+
+        // ==================== PRODUCTS ====================
+        async function fetchProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = Array(8).fill(0).map(() => `
+                <div class="skeleton rounded-3xl h-96"></div>
+            `).join('');
+            
+            try {
+                const data = await apiCall('/collections/all/products?size=50');
+                products = data.results || [];
+                
+                renderProducts(products);
+            } catch (e) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-red-400">Failed to load products.<br>Check your token in settings.</div>`;
+            }
+        }
+
+        function renderProducts(prods) {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            prods.forEach(product => {
+                const card = document.createElement('div');
+                card.className = "product-card bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800";
+                
+                const primaryImage = product.images?.[0]?.url || 'https://placehold.co/600x600?text=No+Image';
+                const defaultVariant = product.variants?.[0];
+                
+                let variantHTML = '';
+                if (product.variants && product.variants.length > 1) {
+                    variantHTML = `
+                        <select onchange="this.dataset.selectedVariant = this.value" 
+                                class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-4 py-3 text-sm">
+                            ${product.variants.map(v => `
+                                <option value="${v.id}">
+                                    ${v.attributes?.description || v.name} — ${formatPrice(v.unitPrice?.value)}
+                                </option>
+                            `).join('')}
+                        </select>
+                    `;
+                } else if (defaultVariant) {
+                    variantHTML = `<input type="hidden" data-selected-variant="${defaultVariant.id}">`;
+                }
+                
+                card.innerHTML = `
+                    <div class="relative">
+                        <img src="${primaryImage}" class="w-full aspect-square object-cover">
+                        ${product.compareAtPrice ? `<div class="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium">SALE</div>` : ''}
+                    </div>
+                    <div class="p-6">
+                        <div class="font-semibold text-lg mb-1">${product.name}</div>
+                        <div class="text-zinc-400 text-sm mb-4 line-clamp-2">${product.description || ''}</div>
+                        
+                        ${variantHTML}
+                        
+                        <button onclick="addProductToCart(this)" 
+                                data-product-id="${product.id}"
+                                class="mt-6 w-full bg-white hover:bg-zinc-100 transition-colors text-black font-semibold py-4 rounded-2xl">
+                            ADD TO CART
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.addProductToCart = function(btn) {
+            const card = btn.closest('.product-card');
+            const select = card.querySelector('select');
+            let variantId = null;
+            
+            if (select) {
+                variantId = select.value;
+            } else {
+                const hidden = card.querySelector('input[type="hidden"]');
+                variantId = hidden ? hidden.dataset.selectedVariant : null;
+            }
+            
+            if (variantId) {
+                addToCart(variantId);
+            } else {
+                showToast('No variant selected', 'error');
+            }
+        };
+
+        // ==================== SETTINGS ====================
+        function showSettings() {
+            document.getElementById('token-input').value = STOREFRONT_TOKEN;
+            document.getElementById('domain-input').value = CHECKOUT_DOMAIN;
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
         
-        // Make functions global for onclick
-        window.addToCart = addToCart;
-        window.removeFromCart = removeFromCart;
-        window.openCart = openCart;
-        window.closeCart = closeCart;
-        window.checkout = checkout;
+        function hideSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+        
+        function saveSettings() {
+            STOREFRONT_TOKEN = document.getElementById('token-input').value.trim();
+            CHECKOUT_DOMAIN = document.getElementById('domain-input').value.trim();
+            
+            localStorage.setItem('fw_token', STOREFRONT_TOKEN);
+            localStorage.setItem('fw_checkout_domain', CHECKOUT_DOMAIN);
+            
+            hideSettings();
+            location.reload();
+        }
+
+        // ==================== SEARCH ====================
+        function setupSearch() {
+            const input = document.getElementById('search-input');
+            input.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase().trim();
+                if (!term) {
+                    renderProducts(products);
+                    return;
+                }
+                const filtered = products.filter(p => 
+                    p.name.toLowerCase().includes(term) || 
+                    (p.description && p.description.toLowerCase().includes(term))
+                );
+                renderProducts(filtered);
+            });
+        }
+
+        // ==================== BOOTSTRAP ====================
+        async function bootstrap() {
+            if (!STOREFRONT_TOKEN) {
+                showSettings();
+                return;
+            }
+            
+            try {
+                shopInfo = await apiCall('/shop');
+                document.getElementById('shop-name').textContent = shopInfo.name || 'Store';
+            } catch (e) {}
+            
+            await fetchProducts();
+            setupSearch();
+            
+            // Load existing cart count
+            const cart = await getCart();
+            if (cart && cart.items) {
+                document.getElementById('cart-count').textContent = cart.items.length;
+            }
+        }
+
+        window.onload = bootstrap;
     </script>
 </body>
 </html>
