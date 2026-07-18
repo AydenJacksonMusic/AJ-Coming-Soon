@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayden Jackson • Link in Bio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --accent: #a855f7;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .heading-font {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .link-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .link-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .social-icon {
+            transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-2px) scale(1.05);
+            background-color: #27251f;
+            border-color: #3f3a33;
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .glass {
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(12px);
+        }
+
+        .music-gradient {
+            background: linear-gradient(135deg, #a855f7, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white">
+    <!-- Main Container -->
+    <div class="min-h-screen flex items-center justify-center p-5">
+        <div class="w-full max-w-[420px]">
+            
+            <!-- Profile / Logo Section -->
+            <div class="text-center mb-8">
+                <!-- Logo Spot -->
+                <div class="flex justify-center mb-5">
+                    <div class="relative">
+                        <!-- Logo Container - Easy to replace with your actual logo -->
+                        <div class="w-[108px] h-[108px] rounded-full bg-gradient-to-br from-violet-400 via-fuchsia-400 to-violet-500 p-[3px] shadow-2xl shadow-violet-500/30">
+                            <div class="w-full h-full rounded-full bg-zinc-950 flex flex-col items-center justify-center">
+                                <!-- Placeholder Logo Content (replace this div with your logo image if desired) -->
+                                <div class="flex flex-col items-center -mt-0.5">
+                                    <i class="fa-solid fa-music text-[42px] text-white mb-0.5"></i>
+                                    <div class="text-center">
+                                        <span class="font-mono text-[9px] tracking-[4px] text-zinc-400 font-medium">AYDEN</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artist Name -->
+                <h1 class="heading-font text-5xl font-semibold tracking-tighter">Ayden Jackson</h1>
+                
+                <!-- Tagline / Location -->
+                <div class="mt-1.5 flex items-center justify-center gap-2">
+                    <span class="text-sm text-zinc-400">Musician &amp; Songwriter</span>
+                    <span class="w-1 h-1 rounded-full bg-zinc-600"></span>
+                    <span class="text-sm text-zinc-400">Troy, Ohio</span>
+                </div>
+
+                <!-- Short Bio -->
+                <p class="mt-4 text-sm text-zinc-400 max-w-[300px] mx-auto leading-relaxed">
+                    Heartfelt indie songs from the Midwest. New music dropping soon.
+                </p>
+            </div>
+
+            <!-- Social Media Icons -->
+            <div class="mb-7">
+                <div class="flex items-center justify-center gap-x-2 mb-3">
+                    <div class="h-px flex-1 bg-zinc-800"></div>
+                    <span class="section-header text-zinc-500 px-3">Connect</span>
+                    <div class="h-px flex-1 bg-zinc-800"></div>
+                </div>
+                
+                <div class="flex justify-center gap-2.5 flex-wrap">
+                    <!-- X / Twitter -->
+                    <a href="https://x.com/aydenjacmusic" target="_blank" rel="noopener noreferrer"
+                       class="social-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white">
+                        <i class="fa-brands fa-x-twitter text-[17px]"></i>
+                    </a>
+                    
+                    <!-- Instagram -->
+                    <a href="https://instagram.com/aydenjacmusic" target="_blank" rel="noopener noreferrer"
+                       class="social-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white">
+                        <i class="fa-brands fa-instagram text-[17px]"></i>
+                    </a>
+                    
+                    <!-- TikTok -->
+                    <a href="https://www.tiktok.com/@aydenjacmusic" target="_blank" rel="noopener noreferrer"
+                       class="social-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white">
+                        <i class="fa-brands fa-tiktok text-[17px]"></i>
+                    </a>
+                    
+                    <!-- YouTube -->
+                    <a href="https://www.youtube.com/results?search_query=ayden+jackson+music" target="_blank" rel="noopener noreferrer"
+                       class="social-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white">
+                        <i class="fa-brands fa-youtube text-[17px]"></i>
+                    </a>
+                    
+                    <!-- Spotify -->
+                    <a href="https://open.spotify.com/search/ayden%20jackson" target="_blank" rel="noopener noreferrer"
+                       class="social-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white">
+                        <i class="fa-brands fa-spotify text-[17px]"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-[10px] mb-7">
+                
+                <!-- Listen / Stream Button -->
+                <a href="https://open.spotify.com/search/ayden%20jackson" target="_blank" rel="noopener noreferrer"
+                   class="link-btn group flex w-full items-center justify-center gap-3 rounded-2xl bg-white py-[17px] px-6 font-semibold text-zinc-950 active:scale-[0.985]">
+                    <i class="fa-solid fa-play text-lg transition-transform group-hover:scale-110"></i>
+                    <span class="font-semibold tracking-[-0.2px]">Listen on Spotify</span>
+                </a>
+
+                <!-- YouTube Button -->
+                <a href="https://www.youtube.com/results?search_query=ayden+jackson+music" target="_blank" rel="noopener noreferrer"
+                   class="link-btn group flex w-full items-center justify-center gap-3 rounded-2xl border border-zinc-700 bg-zinc-900 py-[17px] px-6 font-semibold hover:bg-zinc-800 active:scale-[0.985]">
+                    <i class="fa-brands fa-youtube text-red-500 text-lg"></i>
+                    <span>Watch Music Videos</span>
+                </a>
+
+                <!-- Merch Store Button - Featured -->
+                <button onclick="showMerchModal()"
+                        class="link-btn group flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 py-[17px] px-6 font-semibold text-white active:scale-[0.985] shadow-lg shadow-violet-500/25 hover:from-violet-600 hover:to-fuchsia-600">
+                    <i class="fa-solid fa-store text-lg"></i>
+                    <span class="font-semibold tracking-[-0.2px]">Shop Merch</span>
+                </button>
+            </div>
+
+            <!-- Newsletter Form -->
+            <div class="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+                <div class="text-center mb-5">
+                    <div class="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-zinc-800">
+                        <i class="fa-solid fa-envelope text-violet-400"></i>
+                    </div>
+                    <h3 class="font-semibold text-[17px]">Stay in the loop</h3>
+                    <p class="mt-1 text-xs text-zinc-400">New releases, tour dates &amp; exclusive updates.</p>
+                </div>
+
+                <!-- Form -->
+                <form id="newsletter-form" onsubmit="handleSubscribe(event)">
+                    <div class="space-y-3">
+                        <input 
+                            type="email" 
+                            id="email-input"
+                            placeholder="your@email.com" 
+                            required
+                            class="w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-3.5 text-sm placeholder:text-zinc-500 outline-none transition focus:border-violet-400">
+                        
+                        <button 
+                            type="submit"
+                            class="w-full rounded-2xl bg-white py-3.5 text-sm font-semibold text-zinc-950 active:bg-zinc-100 transition flex items-center justify-center gap-2">
+                            <span>Subscribe</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success State -->
+                <div id="success-state" class="hidden flex-col items-center justify-center text-center py-2">
+                    <i class="fa-solid fa-check-circle text-emerald-400 text-4xl mb-3"></i>
+                    <p class="font-semibold">You're subscribed!</p>
+                    <p class="text-xs text-zinc-400 mt-1 max-w-[220px]">Thanks! Check your inbox for a confirmation email.</p>
+                    
+                    <button onclick="resetNewsletterForm()" 
+                            class="mt-4 text-xs font-medium text-violet-400 hover:text-violet-300 underline underline-offset-2">
+                        Subscribe with another email
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 text-center">
+                <p class="text-[10px] text-zinc-600">© 2026 Ayden Jackson. All rights reserved.</p>
+                <div class="mt-1 flex justify-center gap-1.5 text-[10px] text-zinc-600">
+                    <span>Made for the fans</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Merch Modal -->
+    <div id="merch-modal" onclick="hideMerchModal(event)"
+         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="w-full max-w-[340px] rounded-3xl border border-zinc-700 bg-zinc-900 p-6">
+            
+            <div class="flex items-start justify-between">
+                <div>
+                    <h4 class="text-xl font-semibold">Merch Store</h4>
+                    <p class="text-xs text-emerald-400 mt-0.5">COMING SOON</p>
+                </div>
+                <button onclick="hideMerchModal()" class="text-zinc-400 hover:text-white -mr-1 -mt-1 p-2">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="my-5 text-sm leading-relaxed text-zinc-300">
+                Official Ayden Jackson merch is launching soon. 
+                Sign up for the newsletter to get early access, limited drops, and exclusive discounts.
+            </div>
+            
+            <div class="flex gap-3">
+                <button onclick="hideMerchModal()" 
+                        class="flex-1 rounded-2xl border border-zinc-600 py-3 text-sm font-medium hover:bg-zinc-800 transition">
+                    Maybe later
+                </button>
+                <button onclick="goToNewsletter()" 
+                        class="flex-1 rounded-2xl bg-white py-3 text-sm font-semibold text-zinc-950 active:bg-zinc-200 transition">
+                    Notify me
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind configuration
+        function initTailwind() {
+            document.documentElement.style.setProperty('--accent', '#a855f7');
+        }
+
+        // Newsletter submit handler
+        function handleSubscribe(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('newsletter-form');
+            const successState = document.getElementById('success-state');
+            const emailInput = document.getElementById('email-input');
+            
+            // Hide form, show success
+            form.style.display = 'none';
+            successState.style.display = 'flex';
+            successState.classList.remove('hidden');
+            
+            // Log for demo (in production: send to your email service)
+            console.log('%c[Newsletter] New subscriber:', 'color:#64748b', emailInput.value);
+            
+            // Optional: You can integrate with Mailchimp, Buttondown, ConvertKit etc. here
+            // Example: fetch('https://your-endpoint.com/subscribe', { method: 'POST', body: JSON.stringify({email: emailInput.value}) })
+        }
+
+        // Reset newsletter form
+        function resetNewsletterForm() {
+            const form = document.getElementById('newsletter-form');
+            const successState = document.getElementById('success-state');
+            const emailInput = document.getElementById('email-input');
+            
+            emailInput.value = '';
+            successState.style.display = 'none';
+            form.style.display = 'block';
+        }
+
+        // Merch modal controls
+        function showMerchModal() {
+            const modal = document.getElementById('merch-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function hideMerchModal(e) {
+            if (e.target.id === 'merch-modal') {
+                const modal = document.getElementById('merch-modal');
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Scroll to newsletter from modal
+        function goToNewsletter() {
+            const modal = document.getElementById('merch-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            setTimeout(() => {
+                const newsletterSection = document.getElementById('newsletter-form');
+                newsletterSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Briefly highlight
+                newsletterSection.style.transition = 'box-shadow 0.3s ease';
+                newsletterSection.style.boxShadow = '0 0 0 3px rgba(168, 85, 247, 0.3)';
+                setTimeout(() => {
+                    newsletterSection.style.boxShadow = 'none';
+                }, 1200);
+            }, 180);
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('merch-modal');
+                if (!modal.classList.contains('hidden')) {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }
+            }
+            
+            // Quick subscribe focus with "/"
+            if (e.key === '/' && document.activeElement.tagName === 'BODY') {
+                e.preventDefault();
+                document.getElementById('email-input').focus();
+            }
+        });
+
+        // Initialize everything
+        window.onload = function() {
+            initTailwind();
+            
+            // Easter egg: Press "?" to show merch modal
+            document.addEventListener('keypress', function(e) {
+                if (e.key === '?') {
+                    const modal = document.getElementById('merch-modal');
+                    if (modal.classList.contains('hidden')) {
+                        showMerchModal();
+                    } else {
+                        modal.classList.remove('flex');
+                        modal.classList.add('hidden');
+                    }
+                }
+            });
+            
+            // Helpful console message for customization
+            console.log('%c[Ayden Jackson Link in Bio] Ready! Edit the social links, add your real logo, and connect the newsletter form to your email provider.', 'color:#52525b; font-size: 9px');
+        }
+    </script>
+</body>
+</html>
